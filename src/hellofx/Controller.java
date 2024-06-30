@@ -1,16 +1,48 @@
 package hellofx;
 
+import javax.swing.Action;
+
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+
+import java.sql.*;
 
 public class Controller {
 
     @FXML
-    private Label label;
+    private TextField usernameTextField;
+    @FXML
+    private PasswordField passwordPasswordField;
+    @FXML
+    private Label loginMessageLabel;    
 
-    public void initialize() {
-        String javaVersion = System.getProperty("java.version");
-        String javafxVersion = System.getProperty("javafx.version");
-        label.setText("Hello, JavaFX " + javafxVersion + "\nRunning on Java " + javaVersion + ".");
+    public void loginButtonOnAction(ActionEvent e) {
+        if (usernameTextField.getText().isBlank() == false && passwordPasswordField.getText().isBlank() == false) {
+            ValidateLogin();
+        } else {
+            loginMessageLabel.setText("Both fields must be filled in.");
+        }
+    }
+
+    public void ValidateLogin() {
+        DBConnection connectNow = new DBConnection();
+        Connection connectDB = connectNow.connectToDB();
+
+        try {
+            Statement stmt = connectDB.createStatement();
+            ResultSet result = stmt.executeQuery("SELECT count(1) FROM users WHERE username = '" + usernameTextField.getText() + "' AND password = '" + passwordPasswordField.getText() + "'");
+    
+            while(result.next()) {
+                if (result.getInt(1) == 1) {
+                    loginMessageLabel.setText("Logged in. Welcome.");
+                } else {
+                    loginMessageLabel.setText("Invalid login. Please try again.");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
+
