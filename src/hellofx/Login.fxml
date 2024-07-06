@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hellofx.Controller">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hellofx.Controller">
    <children>
       <BorderPane prefHeight="400.0" prefWidth="380.0" style="-fx-background-color: #EDE8F5;" HBox.hgrow="ALWAYS">
          <top>
@@ -42,9 +42,9 @@
             </Label>
          </bottom>
       </BorderPane>
-      <VBox alignment="TOP_CENTER" prefHeight="400.0" prefWidth="220.0" style="-fx-background-color: #3D52A0;">
+      <VBox alignment="CENTER" prefHeight="400.0" prefWidth="220.0" style="-fx-background-color: #3D52A0;">
          <children>
-            <Label alignment="CENTER" prefHeight="79.0" prefWidth="102.0" text="Login" textFill="WHITE">
+            <Label alignment="CENTER" prefHeight="45.0" prefWidth="102.0" text="Login" textFill="WHITE">
                <font>
                   <Font size="25.0" />
                </font>
