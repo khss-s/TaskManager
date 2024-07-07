@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -7,32 +8,33 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox alignment="CENTER_LEFT" prefHeight="49.0" prefWidth="600.0">
          <children>
-            <ImageView fitHeight="31.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@user%20(1).png" />
-               </image>
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin>
-            </ImageView>
-            <Label prefHeight="20.0" prefWidth="34.0" text="User">
-               <font>
-                  <Font name="Poppins Regular" size="14.0" />
-               </font>
-               <HBox.margin>
-                  <Insets left="10.0" right="10.0" />
-               </HBox.margin>
-            </Label>
-            <HBox alignment="CENTER" prefHeight="40.0" prefWidth="346.0" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" prefHeight="31.0" prefWidth="68.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <ImageView fitHeight="31.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@user%20(1).png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </ImageView>
+                  <Label prefHeight="20.0" prefWidth="34.0" text="User">
+                     <font>
+                        <Font name="Poppins Regular" size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="31.0" prefWidth="172.0" HBox.hgrow="ALWAYS">
                <children>
                   <Button mnemonicParsing="false" style="-fx-background-color: #21005D;" text="Search" textFill="WHITE">
                      <font>
@@ -42,46 +44,90 @@
                   <TextField promptText="..." style="-fx-background-color: #fff; -fx-border-color: #B2B2B2;" />
                </children>
             </HBox>
-            <Label prefHeight="27.0" prefWidth="65.0" text="Project" textFill="#767676">
-               <font>
-                  <Font name="Poppins Regular" size="18.0" />
-               </font>
+            <HBox alignment="CENTER_RIGHT" prefHeight="31.0" prefWidth="37.0" HBox.hgrow="ALWAYS">
                <HBox.margin>
                   <Insets left="10.0" right="10.0" />
                </HBox.margin>
-            </Label>
+               <children>
+                  <Label prefHeight="27.0" prefWidth="135.0" text="Project_name" textFill="#767676" HBox.hgrow="ALWAYS">
+                     <font>
+                        <Font name="Poppins Regular" size="18.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER" layoutY="51.0" prefHeight="31.0" prefWidth="600.0">
+      <BorderPane prefHeight="294.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
+         <center>
+            <VBox prefHeight="300.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+               <children>
+                  <HBox prefHeight="208.0" prefWidth="600.0" VBox.vgrow="ALWAYS" />
+                  <ScrollBar style="-fx-background-color: #EADDFF; -fx-border-color: #21005D; -fx-border-radius: 10px; -fx-background-radius: 10px;" stylesheets="@style.css">
+                     <styleClass>
+                        <String fx:value="scroll-bar" />
+                        <String fx:value="decrement-arrow" />
+                        <String fx:value="increment-arrow" />
+                        <String fx:value="track" />
+                        <String fx:value="decrement-button" />
+                        <String fx:value="increment-button" />
+                        <String fx:value="thumb" />
+                     </styleClass>
+                  </ScrollBar>
+                  <HBox alignment="CENTER_RIGHT" prefHeight="41.0" prefWidth="550.0">
+                     <children>
+                        <Button mnemonicParsing="false" style="-fx-background-color: #21005D;" text="Create" textFill="WHITE">
+                           <HBox.margin>
+                              <Insets bottom="10.0" top="10.0" />
+                           </HBox.margin>
+                           <font>
+                              <Font name="Poppins Regular" size="12.0" />
+                           </font>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets bottom="5.0" left="25.0" right="25.0" top="5.0" />
+               </padding>
+            </VBox>
+         </center>
+         <top>
+            <HBox alignment="CENTER" prefHeight="0.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button mnemonicParsing="false" style="-fx-background-color: transparent;" styleClass="active" stylesheets="@style.css" text="To Do" textFill="#767676">
+                     <font>
+                        <Font name="Poppins Regular" size="18.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-border-style: hidden none solid none; -fx-border-color: #767676;" text="In Progress" textFill="#767676">
+                     <font>
+                        <Font name="Poppins Regular" size="18.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-border-style: hidden none solid none; -fx-border-color: #767676;" text="Done" textFill="#767676">
+                     <font>
+                        <Font name="Poppins Regular" size="18.0" />
+                     </font>
+                  </Button>
+               </children>
+            </HBox>
+         </top>
+      </BorderPane>
+      <HBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="600.0" style="-fx-background-color: #21005D;">
          <children>
-            <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-border-style: hidden none solid none; -fx-border-color: #767676;" text="To Do" textFill="#767676">
+            <Label prefHeight="48.0" prefWidth="580.0" text="Project/Project_name" textFill="WHITE">
                <font>
                   <Font name="Poppins Regular" size="18.0" />
                </font>
-            </Button>
-            <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-border-style: hidden none solid none; -fx-border-color: #767676;" text="In Progress" textFill="#767676">
-               <font>
-                  <Font name="Poppins Regular" size="18.0" />
-               </font>
-            </Button>
-            <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-border-style: hidden none solid none; -fx-border-color: #767676;" text="Done" textFill="#767676">
-               <font>
-                  <Font name="Poppins Regular" size="18.0" />
-               </font>
-            </Button>
-         </children>
-      </HBox>
-      <VBox layoutY="92.0" prefHeight="208.0" prefWidth="600.0">
-         <children>
-            <HBox prefHeight="208.0" prefWidth="600.0" />
-            <ScrollBar style="-fx-background-color: #EADDFF; -fx-border-color: #21005D;" />
+            </Label>
          </children>
          <padding>
-            <Insets bottom="5.0" left="25.0" right="25.0" top="5.0" />
+            <Insets left="10.0" right="10.0" />
          </padding>
-      </VBox>
+      </HBox>
    </children>
-</Pane>
+</VBox>
