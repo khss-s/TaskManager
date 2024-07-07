@@ -1,14 +1,20 @@
 package hellofx;
 
-import javax.swing.Action;
+//import javax.swing.Action;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
+import javafx.scene.Node;
 
+import java.io.IOException;
 import java.sql.*;
 
-public class Controller {
+public class LoginController {
 
     @FXML
     private TextField usernameTextField;
@@ -17,7 +23,7 @@ public class Controller {
     @FXML
     private Label loginMessageLabel;    
 
-    public void loginButtonOnAction(ActionEvent e) {
+    public void loginButtonOnAction(ActionEvent e) throws IOException {
         if (usernameTextField.getText().isBlank() == false && passwordPasswordField.getText().isBlank() == false) {
             ValidateLogin();
         } else {
@@ -43,6 +49,15 @@ public class Controller {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void handleSignInClick(ActionEvent e) throws IOException {
+        Parent registerPage = FXMLLoader.load(getClass().getResource("Register.fxml"));
+        Scene registerScene = new Scene(registerPage);
+
+        Stage window = (Stage) ((Node) e.getSource()).getScene().getWindow();
+        window.setScene(registerScene);
+        window.show();
     }
 }
 
