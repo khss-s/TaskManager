@@ -11,15 +11,22 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("Login.fxml"));
+        boolean loggedIn = LoginState.getLoginState();
+        Parent root;
+        
+        if (loggedIn) {
+            root = FXMLLoader.load(getClass().getResource("MainApp.fxml"));
+            primaryStage.setTitle("TaskMaster");
+        } else {
+            root = FXMLLoader.load(getClass().getResource("Login.fxml"));
+            primaryStage.setTitle("TaskMaster Log-in");
+        }
 
+        primaryStage.setScene(new Scene(root, 600, 400));
         Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
         primaryStage.getIcons().add(icon);
-        primaryStage.setTitle("TaskMaster Login");
-        primaryStage.setScene(new Scene(root, 600, 400));
         primaryStage.show();
     }
-
 
     public static void main(String[] args) {
         launch(args);

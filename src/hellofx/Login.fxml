@@ -114,7 +114,7 @@
             <Pane prefHeight="38.0" prefWidth="180.0">
                <children>
                   <Label layoutX="6.0" layoutY="11.0" text="Don't have an account?" textFill="WHITE" />
-                  <Hyperlink fx:id="signInHyperlink" layoutX="130.0" layoutY="8.0" onAction="#handleSignInClick" text="Sign in" />
+                  <Hyperlink fx:id="signInHyperlink" layoutX="130.0" layoutY="8.0" onAction="#goToSignin" text="Sign in" />
                </children>
             </Pane>
          </children>
