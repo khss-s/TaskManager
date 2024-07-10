@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
@@ -22,19 +23,41 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainAppController implements Initializable {
     @FXML
+    private TextField searchField;
+    @FXML
     private Label usernameLabel;
     @FXML
     private HBox notesContainer;
+
+    private List<VBox> allNotes = new ArrayList<>();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         int userId = LoginState.getUserId();
         String username = fetchUsername(userId);
         usernameLabel.setText(username);
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> filterNotes(newValue));
+    }
+
+    private void filterNotes(String keyword) {
+        notesContainer.getChildren().clear();
+        if (keyword.isEmpty()) {
+            notesContainer.getChildren().addAll(allNotes);
+        } else {
+            for (VBox noteBox : allNotes) {
+                Label titleLabel = (Label) noteBox.getChildren().get(0);
+                if (titleLabel.getText().toLowerCase().contains(keyword.toLowerCase())) {
+                    notesContainer.getChildren().add(noteBox);
+                }
+            }
+        }
     }
 
     private String fetchUsername(int userId) {
@@ -80,27 +103,28 @@ public class MainAppController implements Initializable {
         VBox noteBox = new VBox();
         noteBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
         noteBox.setPrefSize(175, 175);
-
+    
         Label titleLabel = new Label(title);
         TextArea contentArea = new TextArea(content);
         contentArea.setWrapText(true);
         contentArea.setEditable(false);
-
+    
         ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("edit_icon.png")));
         editIcon.setFitWidth(15); // Adjust these values to fit your icon size
         editIcon.setFitHeight(15); // Adjust these values to fit your icon size
-
+    
         Button editButton = new Button();
         editButton.setGraphic(editIcon);
         editButton.setPrefSize(10, 10); // Set preferred size for the button
         editButton.setStyle("-fx-background-color: transparent;"); // Transparent background
         editButton.setOnAction(event -> handleEditButtonClick(noteBox, titleLabel, contentArea));
-
+    
         HBox buttonBox = new HBox();
         buttonBox.getChildren().add(editButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         noteBox.getChildren().addAll(titleLabel, contentArea, buttonBox);
         notesContainer.getChildren().add(noteBox);
+        allNotes.add(noteBox); // Store the note in allNotes
     }
 
     private void handleEditButtonClick(VBox noteBox, Label titleLabel, TextArea contentArea) {
