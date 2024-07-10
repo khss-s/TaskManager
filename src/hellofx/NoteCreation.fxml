@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="hellofx.NoteCreationController">
+    <children>
+        <Label text="Create a New Note" />
+        <TextField fx:id="titleField" promptText="Title" />
+        <TextArea fx:id="contentField" promptText="Content" wrapText="true" />
+        <Button mnemonicParsing="false" onAction="#handleSaveButtonAction" style="-fx-background-color: #21005D;" text="Create" textFill="WHITE">
+        </Button>
+    </children>
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10" />
+    </padding>
+</VBox>
