@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -46,7 +47,30 @@ public class MainAppController implements Initializable {
         String username = fetchUsername(userId);
         usernameLabel.setText(username);
 
+        loadTasksFromDatabase(userId);
+
         searchField.textProperty().addListener((observable, oldValue, newValue) -> filterTasks(newValue));
+    }
+
+    private void loadTasksFromDatabase(int userId) {
+        DBConnection connectNow = new DBConnection();
+        Connection connectDB = connectNow.connectToDB();
+
+        try {
+            Statement stmt = connectDB.createStatement();
+            ResultSet result = stmt.executeQuery("SELECT * FROM tasks WHERE user_id = " + userId);
+
+            while (result.next()) {
+                int taskId = result.getInt("task_id");
+                String title = result.getString("title");
+                String content = result.getString("content");
+                boolean isDone = result.getBoolean("is_done");
+
+                addTaskToContainer(taskId, title, content, isDone);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void filterTasks(String keyword) {
@@ -104,37 +128,61 @@ public class MainAppController implements Initializable {
     }
 
     public void addTaskToContainer(String title, String content) {
+        // Insert the task into the database and get the generated task ID
+        int taskId = insertTaskIntoDatabase(title, content);
+
+        // This method should call the overloaded method with taskId and isDone
+        // For newly created tasks, isDone should be false
+        addTaskToContainer(taskId, title, content, false);
+    }
+
+    private int insertTaskIntoDatabase(String title, String content) {
+        int taskId = 0;
+        int userId = LoginState.getUserId();
+
+        try {
+            DBConnection connectNow = new DBConnection();
+            Connection connectDB = connectNow.connectToDB();
+            String query = "INSERT INTO tasks (user_id, title, content, is_done) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = connectDB.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setInt(1, userId);
+            pstmt.setString(2, title);
+            pstmt.setString(3, content);
+            pstmt.setBoolean(4, false);
+            pstmt.executeUpdate();
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                taskId = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return taskId;
+    }
+
+    public void addTaskToContainer(int taskId, String title, String content, boolean isDone) {
         VBox taskBox = new VBox();
         taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
         taskBox.setPrefSize(175, 175);
-    
+
+        // Set taskId as a property of taskBox
+        taskBox.getProperties().put("taskId", taskId);
+
         Label titleLabel = new Label(title);
         TextArea contentArea = new TextArea(content);
         contentArea.setWrapText(true);
         contentArea.setEditable(false);
         contentArea.setPrefHeight(100);
-    
+
         CheckBox doneCheckBox = new CheckBox("Done");
         doneCheckBox.setMinWidth(51);
         doneCheckBox.setPrefWidth(51);
         doneCheckBox.setStyle("-fx-background-color: transparent;");
-        doneCheckBox.setOnAction(event -> {
-            // Handle what happens when the checkbox is clicked (e.g., update database or UI)
-            if (doneCheckBox.isSelected()) {
-                // Mark the task as done
-                tasksContainer.getChildren().remove(taskBox);
-                tasksContainer.getChildren().add(taskBox);
-                allTasks.remove(taskBox);
-                allTasks.add(taskBox);
-                // You can add logic here to update your database or do any other action
+        doneCheckBox.setSelected(isDone);
+        doneCheckBox.setOnAction(event -> handleDoneCheckboxAction(event, taskId, doneCheckBox));
 
-            } else {
-                // Mark the task as not done
-                // You can add logic here to update your database or do any other action
-                
-            }
-        });
-    
         // HBox for title and checkbox
         HBox titleBox = new HBox();
         Region spacer = new Region();
@@ -150,26 +198,55 @@ public class MainAppController implements Initializable {
         editButton.setGraphic(editIcon);
         editButton.setPrefSize(10, 10);
         editButton.setStyle("-fx-background-color: transparent;");
-        editButton.setOnAction(event -> handleEditButtonClick(taskBox, titleLabel, contentArea));
-    
+        editButton.setOnAction(event -> handleEditButtonClick(taskBox, titleLabel, contentArea, taskId));
+
         HBox buttonBox = new HBox();
         buttonBox.getChildren().add(editButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
-    
+
         taskBox.getChildren().addAll(titleBox, contentArea, buttonBox);
         taskBox.setSpacing(10);
         tasksContainer.getChildren().add(taskBox);
         allTasks.add(taskBox);
     }
-    
-    private void handleEditButtonClick(VBox taskBox, Label titleLabel, TextArea contentArea) {
+
+    private void handleDoneCheckboxAction(ActionEvent event, int taskId, CheckBox checkBox) {
+        boolean isDone = checkBox.isSelected();
+
+        // Update the task's is_done status in the database
+        try {
+            DBConnection connectNow = new DBConnection();
+            Connection connectDB = connectNow.connectToDB();
+            String query = "UPDATE tasks SET is_done = ? WHERE task_id = ?";
+            PreparedStatement pstmt = connectDB.prepareStatement(query);
+            pstmt.setBoolean(1, isDone);
+            pstmt.setInt(2, taskId);
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Move the task to the end of the container if done
+        if (isDone) {
+            Node taskBox = checkBox.getParent().getParent();
+            tasksContainer.getChildren().remove(taskBox);
+            tasksContainer.getChildren().add(taskBox);
+            allTasks.remove(taskBox);
+            allTasks.add((VBox) taskBox);
+        } else {
+            // If marking as not done, you can implement logic to move it back to its original position if needed
+        }
+    }
+
+    @FXML
+    public void handleEditButtonClick(VBox taskBox, Label titleLabel, TextArea contentArea, int taskId) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("TaskEditing.fxml"));
             Parent root = loader.load();
 
             TaskEditingController controller = loader.getController();
             controller.setMainAppController(this);
-            controller.setTaskBox(taskBox, titleLabel, contentArea);
+            controller.setTaskBox(taskBox, titleLabel, contentArea, taskId);
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
@@ -183,14 +260,87 @@ public class MainAppController implements Initializable {
     }
 
     public void deleteTaskFromContainer(VBox taskBox) {
+        // Remove the task from the UI
         tasksContainer.getChildren().remove(taskBox);
         allTasks.remove(taskBox);
+
+        // Extract taskId, title, and content from taskBox
+        int taskId = (int) taskBox.getProperties().get("taskId");
+
+        deleteTaskFromDatabase(taskId);
+    }
+
+    private void deleteTaskFromDatabase(int taskId) {
+        try {
+            DBConnection connectNow = new DBConnection();
+            Connection connectDB = connectNow.connectToDB();
+            String query = "DELETE FROM tasks WHERE task_id = ?";
+            PreparedStatement pstmt = connectDB.prepareStatement(query);
+            pstmt.setInt(1, taskId);
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     public void handleClearAllButtonAction(ActionEvent event) {
+        // Clear all tasks from the UI
         tasksContainer.getChildren().clear();
         allTasks.clear();
+
+        // Clear all tasks from the database for the logged-in user
+        int userId = LoginState.getUserId();
+        try {
+            DBConnection connectNow = new DBConnection();
+            Connection connectDB = connectNow.connectToDB();
+            String query = "DELETE FROM tasks WHERE user_id = ?";
+            PreparedStatement pstmt = connectDB.prepareStatement(query);
+            pstmt.setInt(1, userId);
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleClearDoneTasksButtonAction(ActionEvent event) {
+        deleteAllDoneTasksFromDatabase();
+        removeAllDoneTasksFromUI();
+    }
+
+    private void deleteAllDoneTasksFromDatabase() {
+        int userId = LoginState.getUserId();
+        try {
+            DBConnection connectNow = new DBConnection();
+            Connection connectDB = connectNow.connectToDB();
+            String query = "DELETE FROM tasks WHERE user_id = ? AND is_done = true";
+            PreparedStatement pstmt = connectDB.prepareStatement(query);
+            pstmt.setInt(1, userId);
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void removeAllDoneTasksFromUI() {
+        // Create a list to hold tasks that need to be removed
+        List<VBox> tasksToRemove = new ArrayList<>();
+        
+        // Iterate over all tasks and add the ones that are done to the list
+        for (Node node : tasksContainer.getChildren()) {
+            VBox taskBox = (VBox) node;
+            HBox titleBox = (HBox) taskBox.getChildren().get(0);
+            CheckBox doneCheckBox = (CheckBox) titleBox.getChildren().get(2);
+
+            if (doneCheckBox.isSelected()) {
+                tasksToRemove.add(taskBox);
+            }
+        }
+        
+        // Remove the tasks from the UI and the allTasks list
+        tasksContainer.getChildren().removeAll(tasksToRemove);
+        allTasks.removeAll(tasksToRemove);
     }
 
     @FXML

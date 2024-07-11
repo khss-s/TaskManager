@@ -1,5 +1,8 @@
 package hellofx;
 
+// import java.sql.Connection;
+// import java.sql.PreparedStatement;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -27,6 +30,22 @@ public class TaskCreationController {
         if (title.isEmpty()) {
             title = "Title";
         }
+
+        // int userId = LoginState.getUserId();
+
+        // // Insert task into database
+        // try {
+        //     DBConnection connectNow = new DBConnection();
+        //     Connection connectDB = connectNow.connectToDB();
+        //     String query = "INSERT INTO tasks (user_id, title, content, is_done) VALUES (?, ?, ?, false)";
+        //     PreparedStatement pstmt = connectDB.prepareStatement(query);
+        //     pstmt.setInt(1, userId);
+        //     pstmt.setString(2, title);
+        //     pstmt.setString(3, content);
+        //     pstmt.executeUpdate();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
         
         mainAppController.addTaskToContainer(title, content);
 
