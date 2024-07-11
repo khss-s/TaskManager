@@ -37,12 +37,7 @@
             </HBox>
             <HBox alignment="CENTER" prefHeight="31.0" prefWidth="172.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Button mnemonicParsing="false" style="-fx-background-color: #21005D;" text="Search" textFill="WHITE">
-                     <font>
-                        <Font name="Poppins Regular" size="12.0" />
-                     </font>
-                  </Button>
-                  <TextField fx:id="searchField" promptText="..." style="-fx-background-color: #fff; -fx-border-color: #B2B2B2;" />
+                  <TextField fx:id="searchField" promptText="Search for a task" style="-fx-background-color: #fff; -fx-border-color: #B2B2B2;" />
                </children>
             </HBox>
             <HBox alignment="CENTER_RIGHT" prefHeight="31.0" prefWidth="37.0" HBox.hgrow="ALWAYS">

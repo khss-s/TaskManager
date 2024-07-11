@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -16,6 +17,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -52,7 +55,8 @@ public class MainAppController implements Initializable {
             notesContainer.getChildren().addAll(allNotes);
         } else {
             for (VBox noteBox : allNotes) {
-                Label titleLabel = (Label) noteBox.getChildren().get(0);
+                HBox titleBox = (HBox) noteBox.getChildren().get(0);
+                Label titleLabel = (Label) titleBox.getChildren().get(0);
                 if (titleLabel.getText().toLowerCase().contains(keyword.toLowerCase())) {
                     notesContainer.getChildren().add(noteBox);
                 }
@@ -108,25 +112,50 @@ public class MainAppController implements Initializable {
         TextArea contentArea = new TextArea(content);
         contentArea.setWrapText(true);
         contentArea.setEditable(false);
+        contentArea.setPrefHeight(100);
     
+        CheckBox doneCheckBox = new CheckBox("Done");
+        doneCheckBox.setMinWidth(51);
+        doneCheckBox.setPrefWidth(51);
+        doneCheckBox.setStyle("-fx-background-color: transparent;");
+        doneCheckBox.setOnAction(event -> {
+            // Handle what happens when the checkbox is clicked (e.g., update database or UI)
+            if (doneCheckBox.isSelected()) {
+                // Mark the note as done
+                // You can add logic here to update your database or do any other action
+            } else {
+                // Mark the note as not done
+                // You can add logic here to update your database or do any other action
+            }
+        });
+    
+        // HBox for title and checkbox
+        HBox titleBox = new HBox();
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        titleBox.getChildren().addAll(titleLabel, spacer, doneCheckBox);
+        titleBox.setAlignment(Pos.CENTER_LEFT);
+
         ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("edit_icon.png")));
-        editIcon.setFitWidth(15); // Adjust these values to fit your icon size
-        editIcon.setFitHeight(15); // Adjust these values to fit your icon size
-    
+        editIcon.setFitWidth(15);
+        editIcon.setFitHeight(15);
+
         Button editButton = new Button();
         editButton.setGraphic(editIcon);
-        editButton.setPrefSize(10, 10); // Set preferred size for the button
-        editButton.setStyle("-fx-background-color: transparent;"); // Transparent background
+        editButton.setPrefSize(10, 10);
+        editButton.setStyle("-fx-background-color: transparent;");
         editButton.setOnAction(event -> handleEditButtonClick(noteBox, titleLabel, contentArea));
     
         HBox buttonBox = new HBox();
         buttonBox.getChildren().add(editButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        noteBox.getChildren().addAll(titleLabel, contentArea, buttonBox);
+    
+        noteBox.getChildren().addAll(titleBox, contentArea, buttonBox);
+        noteBox.setSpacing(10);
         notesContainer.getChildren().add(noteBox);
-        allNotes.add(noteBox); // Store the note in allNotes
+        allNotes.add(noteBox);
     }
-
+    
     private void handleEditButtonClick(VBox noteBox, Label titleLabel, TextArea contentArea) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("NoteEditing.fxml"));
@@ -149,11 +178,13 @@ public class MainAppController implements Initializable {
 
     public void deleteNoteFromContainer(VBox noteBox) {
         notesContainer.getChildren().remove(noteBox);
+        allNotes.remove(noteBox);
     }
 
     @FXML
     public void handleClearAllButtonAction(ActionEvent event) {
         notesContainer.getChildren().clear();
+        allNotes.clear();
     }
 
     @FXML
