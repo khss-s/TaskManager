@@ -1,7 +1,9 @@
 package hellofx;
 
-// import java.sql.Connection;
-// import java.sql.PreparedStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,23 +33,30 @@ public class TaskCreationController {
             title = "Title";
         }
 
-        // int userId = LoginState.getUserId();
+        int taskId = 0;
+        int userId = LoginState.getUserId();
 
-        // // Insert task into database
-        // try {
-        //     DBConnection connectNow = new DBConnection();
-        //     Connection connectDB = connectNow.connectToDB();
-        //     String query = "INSERT INTO tasks (user_id, title, content, is_done) VALUES (?, ?, ?, false)";
-        //     PreparedStatement pstmt = connectDB.prepareStatement(query);
-        //     pstmt.setInt(1, userId);
-        //     pstmt.setString(2, title);
-        //     pstmt.setString(3, content);
-        //     pstmt.executeUpdate();
-        // } catch (Exception e) {
-        //     e.printStackTrace();
-        // }
+        // Insert task into database
+        try {
+            DBConnection connectNow = new DBConnection();
+            Connection connectDB = connectNow.connectToDB();
+            String query = "INSERT INTO tasks (user_id, title, content, is_done) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = connectDB.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setInt(1, userId);
+            pstmt.setString(2, title);
+            pstmt.setString(3, content);
+            pstmt.setBoolean(4, false);
+            pstmt.executeUpdate();
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                taskId = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
-        mainAppController.addTaskToContainer(title, content);
+        mainAppController.addTaskToContainer(taskId, title, content, false);
 
         // Close the window
         Stage stage = (Stage) titleField.getScene().getWindow();
