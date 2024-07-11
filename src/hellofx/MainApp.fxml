@@ -64,7 +64,7 @@
                <children>
                   <ScrollPane hbarPolicy="ALWAYS" style="-fx-background-color: #EADDFF; -fx-background-radius: 10px;" VBox.vgrow="ALWAYS">
                      <content>
-                        <HBox fx:id="notesContainer" spacing="10" />
+                        <HBox fx:id="tasksContainer" spacing="10" />
                      </content>
                   </ScrollPane>
                   <HBox alignment="CENTER_RIGHT" prefHeight="41.0" prefWidth="550.0">

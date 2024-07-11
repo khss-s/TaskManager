@@ -36,9 +36,9 @@ public class MainAppController implements Initializable {
     @FXML
     private Label usernameLabel;
     @FXML
-    private HBox notesContainer;
+    private HBox tasksContainer;
 
-    private List<VBox> allNotes = new ArrayList<>();
+    private List<VBox> allTasks = new ArrayList<>();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -46,19 +46,19 @@ public class MainAppController implements Initializable {
         String username = fetchUsername(userId);
         usernameLabel.setText(username);
 
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> filterNotes(newValue));
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> filterTasks(newValue));
     }
 
-    private void filterNotes(String keyword) {
-        notesContainer.getChildren().clear();
+    private void filterTasks(String keyword) {
+        tasksContainer.getChildren().clear();
         if (keyword.isEmpty()) {
-            notesContainer.getChildren().addAll(allNotes);
+            tasksContainer.getChildren().addAll(allTasks);
         } else {
-            for (VBox noteBox : allNotes) {
-                HBox titleBox = (HBox) noteBox.getChildren().get(0);
+            for (VBox taskBox : allTasks) {
+                HBox titleBox = (HBox) taskBox.getChildren().get(0);
                 Label titleLabel = (Label) titleBox.getChildren().get(0);
                 if (titleLabel.getText().toLowerCase().contains(keyword.toLowerCase())) {
-                    notesContainer.getChildren().add(noteBox);
+                    tasksContainer.getChildren().add(taskBox);
                 }
             }
         }
@@ -86,15 +86,15 @@ public class MainAppController implements Initializable {
     @FXML
     public void handleCreateButtonAction(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("NoteCreation.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TaskCreation.fxml"));
             Parent root = loader.load();
 
-            NoteCreationController controller = loader.getController();
+            TaskCreationController controller = loader.getController();
             controller.setMainAppController(this);
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Create Note");
+            stage.setTitle("Create Task");
             Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
             stage.getIcons().add(icon);
             stage.show();
@@ -103,10 +103,10 @@ public class MainAppController implements Initializable {
         }
     }
 
-    public void addNoteToContainer(String title, String content) {
-        VBox noteBox = new VBox();
-        noteBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
-        noteBox.setPrefSize(175, 175);
+    public void addTaskToContainer(String title, String content) {
+        VBox taskBox = new VBox();
+        taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+        taskBox.setPrefSize(175, 175);
     
         Label titleLabel = new Label(title);
         TextArea contentArea = new TextArea(content);
@@ -121,10 +121,10 @@ public class MainAppController implements Initializable {
         doneCheckBox.setOnAction(event -> {
             // Handle what happens when the checkbox is clicked (e.g., update database or UI)
             if (doneCheckBox.isSelected()) {
-                // Mark the note as done
+                // Mark the task as done
                 // You can add logic here to update your database or do any other action
             } else {
-                // Mark the note as not done
+                // Mark the task as not done
                 // You can add logic here to update your database or do any other action
             }
         });
@@ -144,30 +144,30 @@ public class MainAppController implements Initializable {
         editButton.setGraphic(editIcon);
         editButton.setPrefSize(10, 10);
         editButton.setStyle("-fx-background-color: transparent;");
-        editButton.setOnAction(event -> handleEditButtonClick(noteBox, titleLabel, contentArea));
+        editButton.setOnAction(event -> handleEditButtonClick(taskBox, titleLabel, contentArea));
     
         HBox buttonBox = new HBox();
         buttonBox.getChildren().add(editButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
     
-        noteBox.getChildren().addAll(titleBox, contentArea, buttonBox);
-        noteBox.setSpacing(10);
-        notesContainer.getChildren().add(noteBox);
-        allNotes.add(noteBox);
+        taskBox.getChildren().addAll(titleBox, contentArea, buttonBox);
+        taskBox.setSpacing(10);
+        tasksContainer.getChildren().add(taskBox);
+        allTasks.add(taskBox);
     }
     
-    private void handleEditButtonClick(VBox noteBox, Label titleLabel, TextArea contentArea) {
+    private void handleEditButtonClick(VBox taskBox, Label titleLabel, TextArea contentArea) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("NoteEditing.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TaskEditing.fxml"));
             Parent root = loader.load();
 
-            NoteEditingController controller = loader.getController();
+            TaskEditingController controller = loader.getController();
             controller.setMainAppController(this);
-            controller.setNoteBox(noteBox, titleLabel, contentArea);
+            controller.setTaskBox(taskBox, titleLabel, contentArea);
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Edit Note");
+            stage.setTitle("Edit Task");
             Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
             stage.getIcons().add(icon);
             stage.show();
@@ -176,15 +176,15 @@ public class MainAppController implements Initializable {
         }
     }
 
-    public void deleteNoteFromContainer(VBox noteBox) {
-        notesContainer.getChildren().remove(noteBox);
-        allNotes.remove(noteBox);
+    public void deleteTaskFromContainer(VBox taskBox) {
+        tasksContainer.getChildren().remove(taskBox);
+        allTasks.remove(taskBox);
     }
 
     @FXML
     public void handleClearAllButtonAction(ActionEvent event) {
-        notesContainer.getChildren().clear();
-        allNotes.clear();
+        tasksContainer.getChildren().clear();
+        allTasks.clear();
     }
 
     @FXML

@@ -7,9 +7,9 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="hellofx.NoteCreationController">
+<VBox alignment="CENTER" spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="hellofx.TaskCreationController">
     <children>
-        <Label text="Create a New Note" />
+        <Label text="Create a New Task" />
         <TextField fx:id="titleField" promptText="Title" />
         <TextArea fx:id="contentField" promptText="Content" wrapText="true" />
         <Button mnemonicParsing="false" onAction="#handleSaveButtonAction" style="-fx-background-color: #21005D;" text="Create" textFill="WHITE">

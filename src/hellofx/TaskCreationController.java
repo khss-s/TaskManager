@@ -6,7 +6,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class NoteCreationController {
+public class TaskCreationController {
     @FXML
     private TextField titleField;
     @FXML
@@ -28,7 +28,7 @@ public class NoteCreationController {
             title = "Title";
         }
         
-        mainAppController.addNoteToContainer(title, content);
+        mainAppController.addTaskToContainer(title, content);
 
         // Close the window
         Stage stage = (Stage) titleField.getScene().getWindow();

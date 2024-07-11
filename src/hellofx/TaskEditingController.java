@@ -8,7 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class NoteEditingController {
+public class TaskEditingController {
     @FXML
     private TextField titleField;
     @FXML
@@ -16,7 +16,7 @@ public class NoteEditingController {
     @FXML
     private MainAppController mainAppController;
     @FXML
-    private VBox noteBox;
+    private VBox taskBox;
     @FXML
     private Label titleLabel;
     @FXML
@@ -26,8 +26,8 @@ public class NoteEditingController {
         this.mainAppController = mainAppController;
     }
 
-    public void setNoteBox(VBox noteBox, Label titleLabel, TextArea contentArea) {
-        this.noteBox = noteBox;
+    public void setTaskBox(VBox taskBox, Label titleLabel, TextArea contentArea) {
+        this.taskBox = taskBox;
         this.titleLabel = titleLabel;
         this.contentArea = contentArea;
 
@@ -46,7 +46,7 @@ public class NoteEditingController {
             title = "Title";
         }
 
-        // Update the note box
+        // Update the task box
         titleLabel.setText(title);
         contentArea.setText(content);
 
@@ -57,8 +57,8 @@ public class NoteEditingController {
 
     @FXML
     public void handleDeleteButtonAction(ActionEvent event) {
-        // Remove the note box from the main application
-        mainAppController.deleteNoteFromContainer(noteBox);
+        // Remove the task box from the main application
+        mainAppController.deleteTaskFromContainer(taskBox);
 
         // Close the window
         Stage stage = (Stage) titleField.getScene().getWindow();
