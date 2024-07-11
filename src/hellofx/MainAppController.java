@@ -121,13 +121,17 @@ public class MainAppController implements Initializable {
         doneCheckBox.setOnAction(event -> {
             // Handle what happens when the checkbox is clicked (e.g., update database or UI)
             if (doneCheckBox.isSelected()) {
+                // Mark the task as done
                 tasksContainer.getChildren().remove(taskBox);
                 tasksContainer.getChildren().add(taskBox);
-                // Mark the task as done
+                allTasks.remove(taskBox);
+                allTasks.add(taskBox);
                 // You can add logic here to update your database or do any other action
+
             } else {
                 // Mark the task as not done
                 // You can add logic here to update your database or do any other action
+                
             }
         });
     
