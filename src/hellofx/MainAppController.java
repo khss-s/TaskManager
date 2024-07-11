@@ -41,6 +41,8 @@ public class MainAppController implements Initializable {
 
     private List<VBox> allTasks = new ArrayList<>();
 
+    private List<Stage> openWindows = new ArrayList<>();
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         int userId = LoginState.getUserId();
@@ -50,6 +52,26 @@ public class MainAppController implements Initializable {
         loadTasksFromDatabase(userId);
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> filterTasks(newValue));
+
+        tasksContainer.sceneProperty().addListener((observable, oldScene, newScene) -> {
+            if (newScene != null) {
+                Stage primaryStage = (Stage) newScene.getWindow();
+                primaryStage.setOnCloseRequest(event -> closeAllOpenWindows());
+            }
+        });
+    }
+
+    public void addOpenWindow(Stage stage) {
+        openWindows.add(stage);
+    }
+    
+    private void closeAllOpenWindows() {
+        for (Stage stage : openWindows) {
+            if (stage.isShowing()) {
+                stage.close();
+            }
+        }
+        openWindows.clear();
     }
 
     private void loadTasksFromDatabase(int userId) {
@@ -68,6 +90,9 @@ public class MainAppController implements Initializable {
 
                 addTaskToContainer(taskId, title, content, isDone);
             }
+
+            // Reorder tasks to move checked tasks to the end
+            reorderTasks();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -107,6 +132,34 @@ public class MainAppController implements Initializable {
         return username;
     }
 
+    // Reorders tasks to move checked tasks to the end
+    private void reorderTasks() {
+        List<Node> tasks = new ArrayList<>(tasksContainer.getChildren());
+        tasks.sort((node1, node2) -> {
+            VBox taskBox1 = (VBox) node1;
+            VBox taskBox2 = (VBox) node2;
+    
+            HBox titleBox1 = (HBox) taskBox1.getChildren().get(0);
+            CheckBox checkBox1 = findCheckBox(titleBox1);
+    
+            HBox titleBox2 = (HBox) taskBox2.getChildren().get(0);
+            CheckBox checkBox2 = findCheckBox(titleBox2);
+    
+            return Boolean.compare(checkBox1.isSelected(), checkBox2.isSelected());
+        });
+    
+        tasksContainer.getChildren().setAll(tasks);
+    }
+    
+    private CheckBox findCheckBox(HBox titleBox) {
+        for (Node node : titleBox.getChildren()) {
+            if (node instanceof CheckBox) {
+                return (CheckBox) node;
+            }
+        }
+        return null; // or handle appropriately if no CheckBox is found
+    }    
+
     @FXML
     public void handleCreateButtonAction(ActionEvent event) {
         try {
@@ -122,6 +175,8 @@ public class MainAppController implements Initializable {
             Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
             stage.getIcons().add(icon);
             stage.show();
+
+            addOpenWindow(stage);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -191,15 +246,18 @@ public class MainAppController implements Initializable {
             e.printStackTrace();
         }
 
-        // Move the task to the end of the container if done
+        Node taskBox = checkBox.getParent().getParent();
+        tasksContainer.getChildren().remove(taskBox);
+        allTasks.remove(taskBox);
+    
         if (isDone) {
-            Node taskBox = checkBox.getParent().getParent();
-            tasksContainer.getChildren().remove(taskBox);
+            // Move the task to the end of the container if done
             tasksContainer.getChildren().add(taskBox);
-            allTasks.remove(taskBox);
             allTasks.add((VBox) taskBox);
         } else {
-            // If marking as not done, you can implement logic to move it back to its original position if needed
+            // Move the task to the front of the container if not done
+            tasksContainer.getChildren().add(0, taskBox);
+            allTasks.add(0, (VBox) taskBox);
         }
     }
 
@@ -219,6 +277,8 @@ public class MainAppController implements Initializable {
             Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
             stage.getIcons().add(icon);
             stage.show();
+
+            addOpenWindow(stage);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -310,6 +370,8 @@ public class MainAppController implements Initializable {
 
     @FXML
     public void LogOut(ActionEvent e) throws IOException {
+        closeAllOpenWindows();  // Close all open windows
+
         LoginState.saveLoginState(false);
         Parent loginPage = FXMLLoader.load(getClass().getResource("Login.fxml"));
         Scene loginScene = new Scene(loginPage);
