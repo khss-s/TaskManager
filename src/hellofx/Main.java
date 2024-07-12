@@ -22,7 +22,7 @@ public class Main extends Application {
             primaryStage.setTitle("TaskMaster Log-in");
         }
 
-        primaryStage.setScene(new Scene(root, 600, 400));
+        primaryStage.setScene(new Scene(root, 700, 400));
         Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
         primaryStage.getIcons().add(icon);
         primaryStage.show();

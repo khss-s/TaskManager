@@ -11,11 +11,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -37,7 +39,7 @@ public class MainAppController implements Initializable {
     @FXML
     private Label usernameLabel;
     @FXML
-    private HBox tasksContainer;
+    private FlowPane tasksContainer;
 
     private List<VBox> allTasks = new ArrayList<>();
 
@@ -57,8 +59,24 @@ public class MainAppController implements Initializable {
             if (newScene != null) {
                 Stage primaryStage = (Stage) newScene.getWindow();
                 primaryStage.setOnCloseRequest(event -> closeAllOpenWindows());
+                bindTasksContainerWidth();
             }
         });
+    }
+
+    private void bindTasksContainerWidth() {
+        // Traverse the parent hierarchy until we find a ScrollPane
+        Parent parent = tasksContainer.getParent();
+        while (parent != null && !(parent instanceof ScrollPane)) {
+            parent = parent.getParent();
+        }
+    
+        if (parent instanceof ScrollPane) {
+            ScrollPane scrollPane = (ScrollPane) parent;
+            tasksContainer.prefWidthProperty().bind(scrollPane.widthProperty().subtract(20));
+        } else {
+            System.err.println("ScrollPane not found in hierarchy!");
+        }
     }
 
     public void addOpenWindow(Stage stage) {
@@ -185,7 +203,7 @@ public class MainAppController implements Initializable {
     public void addTaskToContainer(int taskId, String title, String content, boolean isDone) {
         VBox taskBox = new VBox();
         taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
-        taskBox.setPrefSize(175, 175);
+        taskBox.setPrefSize(200, 200);
 
         // Set taskId as a property of taskBox
         taskBox.getProperties().put("taskId", taskId);
@@ -228,6 +246,8 @@ public class MainAppController implements Initializable {
         taskBox.setSpacing(10);
         tasksContainer.getChildren().add(taskBox);
         allTasks.add(taskBox);
+
+        reorderTasks();
     }
 
     private void handleDoneCheckboxAction(ActionEvent event, int taskId, CheckBox checkBox) {
