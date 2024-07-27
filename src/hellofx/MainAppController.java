@@ -233,7 +233,7 @@ public class MainAppController implements Initializable {
             if (dueDate == null) {
                 // Default style if no due date
                 taskBox.setEffect(null);
-                taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+                taskBox.setStyle("-fx-background-color: white; -fx-border-color: #21005D; -fx-padding: 10;");
             } else if (dueDate.isBefore(today)) {
                 // Past due date
                 dropShadow.setColor(Color.RED);
@@ -247,7 +247,7 @@ public class MainAppController implements Initializable {
             } else {
                 // Default style
                 taskBox.setEffect(null);
-                taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+                taskBox.setStyle("-fx-background-color: white; -fx-border-color: #21005D; -fx-padding: 10;");
             }
         }
     }    
@@ -277,7 +277,7 @@ public class MainAppController implements Initializable {
 
     public void addTaskToContainer(int taskId, String title, String content, LocalDate dueDate, boolean isDone) {
         VBox taskBox = new VBox();
-        taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+        taskBox.setStyle("-fx-background-color: white; -fx-border-color: #21005D; -fx-padding: 10;");
         taskBox.setPrefSize(200, 200);
 
         // Set taskId as a property of taskBox
@@ -459,7 +459,7 @@ public class MainAppController implements Initializable {
     }
 
     private void softDeleteAllDoneTasksFromDatabase() {
-        // Soft deletes all done tasks in the database for the logged-in user
+        // Soft delete all done tasks in the database for the logged-in user
         int userId = LoginState.getUserId();
         try {
             DBConnection connectNow = new DBConnection();
@@ -488,7 +488,7 @@ public class MainAppController implements Initializable {
             }
         }
         
-        // Remove the tasks from the UI and the allTasks list
+        // Deletes the tasks from the UI and the allTasks list
         tasksContainer.getChildren().removeAll(tasksToRemove);
         allTasks.removeAll(tasksToRemove);
     }

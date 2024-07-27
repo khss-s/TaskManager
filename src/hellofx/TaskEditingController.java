@@ -6,12 +6,14 @@ import java.time.LocalDate;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class TaskEditingController {
     @FXML
@@ -52,6 +54,9 @@ public class TaskEditingController {
         titleField.setText(titleLabel.getText());
         contentField.setText(contentArea.getText());
         dueDatePicker.setValue(initialDueDate);
+
+        // Disables past dates
+        disablePastDates(dueDatePicker);
     }
 
     @FXML
@@ -99,5 +104,24 @@ public class TaskEditingController {
         // Close the window
         Stage stage = (Stage) titleField.getScene().getWindow();
         stage.close();
+    }
+
+    public static void disablePastDates(DatePicker datePicker) {
+        Callback<DatePicker, DateCell> dayCellFactory = new Callback<>() {
+            @Override
+            public DateCell call(final DatePicker datePicker) {
+                return new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item.isBefore(LocalDate.now())) {
+                            setDisable(true);
+                            setStyle("-fx-background-color: rgba(33, 0, 93, 0.25);");
+                        }
+                    }
+                };
+            }
+        };
+        datePicker.setDayCellFactory(dayCellFactory);
     }
 }
