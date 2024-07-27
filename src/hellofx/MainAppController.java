@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -104,9 +105,10 @@ public class MainAppController implements Initializable {
                 int taskId = result.getInt("task_id");
                 String title = result.getString("title");
                 String content = result.getString("content");
+                LocalDate dueDate = result.getObject("due_date", LocalDate.class);
                 boolean isDone = result.getBoolean("is_done");
 
-                addTaskToContainer(taskId, title, content, isDone);
+                addTaskToContainer(taskId, title, content, dueDate, isDone);
             }
 
             // Reorder tasks to move checked tasks to the end
@@ -200,7 +202,7 @@ public class MainAppController implements Initializable {
         }
     }
 
-    public void addTaskToContainer(int taskId, String title, String content, boolean isDone) {
+    public void addTaskToContainer(int taskId, String title, String content, LocalDate dueDate, boolean isDone) {
         VBox taskBox = new VBox();
         taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
         taskBox.setPrefSize(200, 200);
@@ -223,26 +225,31 @@ public class MainAppController implements Initializable {
 
         // HBox for title and checkbox
         HBox titleBox = new HBox();
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        titleBox.getChildren().addAll(titleLabel, spacer, doneCheckBox);
+        Region titleBoxSpacer = new Region();
+        HBox.setHgrow(titleBoxSpacer, Priority.ALWAYS);
+        titleBox.getChildren().addAll(titleLabel, titleBoxSpacer, doneCheckBox);
         titleBox.setAlignment(Pos.CENTER_LEFT);
 
         ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("edit_icon.png")));
         editIcon.setFitWidth(15);
         editIcon.setFitHeight(15);
-
         Button editButton = new Button();
         editButton.setGraphic(editIcon);
         editButton.setPrefSize(10, 10);
         editButton.setStyle("-fx-background-color: transparent;");
-        editButton.setOnAction(event -> handleEditButtonClick(taskBox, titleLabel, contentArea, taskId));
 
-        HBox buttonBox = new HBox();
-        buttonBox.getChildren().add(editButton);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        Label dueDateLabel = new Label("Due date: " + (dueDate != null ? dueDate.toString() : "No due date"));
 
-        taskBox.getChildren().addAll(titleBox, contentArea, buttonBox);
+        editButton.setOnAction(event -> handleEditButtonClick(taskBox, titleLabel, contentArea, dueDateLabel, taskId));
+        
+        // HBox for due date label and edit button
+        HBox dueDateAndEditBox = new HBox();
+        Region dueDateAndEditBoxSpacer = new Region();
+        HBox.setHgrow(dueDateAndEditBoxSpacer, Priority.ALWAYS);
+        dueDateAndEditBox.getChildren().addAll(dueDateLabel, dueDateAndEditBoxSpacer, editButton);
+        dueDateAndEditBox.setAlignment(Pos.CENTER_LEFT);
+       
+        taskBox.getChildren().addAll(titleBox, contentArea, dueDateAndEditBox);
         taskBox.setSpacing(10);
         tasksContainer.getChildren().add(taskBox);
         allTasks.add(taskBox);
@@ -282,14 +289,14 @@ public class MainAppController implements Initializable {
     }
 
     @FXML
-    public void handleEditButtonClick(VBox taskBox, Label titleLabel, TextArea contentArea, int taskId) {
+    public void handleEditButtonClick(VBox taskBox, Label titleLabel, TextArea contentArea, Label dueDateLabel, int taskId) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("TaskEditing.fxml"));
             Parent root = loader.load();
 
             TaskEditingController controller = loader.getController();
             controller.setMainAppController(this);
-            controller.setTaskBox(taskBox, titleLabel, contentArea, taskId);
+            controller.setTaskBox(taskBox, titleLabel, contentArea, dueDateLabel, getTaskDueDate(taskId), taskId);
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
@@ -303,6 +310,28 @@ public class MainAppController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    private LocalDate getTaskDueDate(int taskId) {
+        LocalDate dueDate = null;
+        DBConnection connectNow = new DBConnection();
+        Connection connectDB = connectNow.connectToDB();
+    
+        try {
+            String query = "SELECT due_date FROM tasks WHERE task_id = ?";
+            PreparedStatement pstmt = connectDB.prepareStatement(query);
+            pstmt.setInt(1, taskId);
+            ResultSet result = pstmt.executeQuery();
+    
+            if (result.next()) {
+                dueDate = result.getObject("due_date", LocalDate.class);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    
+        return dueDate;
+    }
+    
 
     public void deleteTaskFromContainer(VBox taskBox) {
         // Remove the task from the UI
@@ -329,12 +358,12 @@ public class MainAppController implements Initializable {
     }
 
     @FXML
-    public void handleClearAllButtonAction(ActionEvent event) {
-        // Clear all tasks from the UI
+    public void handleDeleteAllButtonAction(ActionEvent event) {
+        // Delete all tasks from the UI
         tasksContainer.getChildren().clear();
         allTasks.clear();
 
-        // Clear all tasks from the database for the logged-in user
+        // Delete all tasks from the database for the logged-in user
         int userId = LoginState.getUserId();
         try {
             DBConnection connectNow = new DBConnection();
@@ -349,7 +378,8 @@ public class MainAppController implements Initializable {
     }
 
     @FXML
-    public void handleClearDoneTasksButtonAction(ActionEvent event) {
+    public void handleDeleteAllDoneTasksButtonAction(ActionEvent event) {
+        // Delete all done tasks from the UI and database for the logged-in user
         deleteAllDoneTasksFromDatabase();
         removeAllDoneTasksFromUI();
     }

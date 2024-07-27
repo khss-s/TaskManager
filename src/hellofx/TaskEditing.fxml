@@ -2,27 +2,34 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="hellofx.TaskEditingController">
+<VBox alignment="CENTER" spacing="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" fx:controller="hellofx.TaskEditingController">
     <children>
         <Label text="Edit Task" />
         <TextField fx:id="titleField" promptText="Title" />
         <TextArea fx:id="contentField" promptText="Content" wrapText="true" />
+        <HBox alignment="CENTER" prefHeight="0.0" prefWidth="478.0">
+            <children>
+                <Label alignment="CENTER" contentDisplay="CENTER" graphicTextGap="0.0" prefHeight="18.0" prefWidth="107.0" text="Edit Due Date:" textAlignment="CENTER" />
+                <DatePicker fx:id="dueDatePicker" prefHeight="26.0" prefWidth="157.0" />
+            </children>
+        </HBox>
         <HBox alignment="CENTER" spacing="10">
             <children>
                 <Button mnemonicParsing="false" onAction="#handleDeleteButtonAction" style="-fx-background-color: #21005D;" text="Delete Task" textFill="WHITE" />
-                <Region HBox.hgrow="ALWAYS"/>
+                <Region HBox.hgrow="ALWAYS" />
                 <Button mnemonicParsing="false" onAction="#handleSaveButtonAction" style="-fx-background-color: #21005D;" text="Save" textFill="WHITE" />
             </children>
         </HBox>
     </children>
     <padding>
-        <Insets top="10" right="10" bottom="10" left="10" />
+        <Insets bottom="10" left="10" right="10" top="10" />
     </padding>
 </VBox>

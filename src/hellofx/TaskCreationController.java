@@ -4,9 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDate;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -16,6 +18,8 @@ public class TaskCreationController {
     private TextField titleField;
     @FXML
     private TextArea contentField;
+    @FXML
+    private DatePicker dueDatePicker;
     @FXML
     private MainAppController mainAppController;
 
@@ -27,6 +31,7 @@ public class TaskCreationController {
     public void handleSaveButtonAction(ActionEvent event) {
         String title = titleField.getText();
         String content = contentField.getText();
+        LocalDate dueDate = dueDatePicker.getValue();
 
         // Check if title is empty and set default value
         if (title.isEmpty()) {
@@ -40,12 +45,13 @@ public class TaskCreationController {
         try {
             DBConnection connectNow = new DBConnection();
             Connection connectDB = connectNow.connectToDB();
-            String query = "INSERT INTO tasks (user_id, title, content, is_done) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO tasks (user_id, title, content, due_date, is_done) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement pstmt = connectDB.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             pstmt.setInt(1, userId);
             pstmt.setString(2, title);
             pstmt.setString(3, content);
-            pstmt.setBoolean(4, false);
+            pstmt.setObject(4, dueDate);
+            pstmt.setBoolean(5, false);
             pstmt.executeUpdate();
 
             ResultSet rs = pstmt.getGeneratedKeys();
@@ -56,7 +62,7 @@ public class TaskCreationController {
             e.printStackTrace();
         }
         
-        mainAppController.addTaskToContainer(taskId, title, content, false);
+        mainAppController.addTaskToContainer(taskId, title, content, dueDate, false);
 
         // Close the window
         Stage stage = (Stage) titleField.getScene().getWindow();
