@@ -33,17 +33,19 @@ public class TaskEditingController {
 
     private int taskId;
     private LocalDate initialDueDate;
+    private boolean isDone;
 
     public void setMainAppController(MainAppController mainAppController) {
         this.mainAppController = mainAppController;
     }
 
-    public void setTaskBox(VBox taskBox, Label titleLabel, TextArea contentArea, Label dueDateLabel, LocalDate dueDate, int taskId) {
+    public void setTaskBox(VBox taskBox, Label titleLabel, TextArea contentArea, Label dueDateLabel, LocalDate dueDate, boolean isDone, int taskId) {
         this.taskBox = taskBox;
         this.titleLabel = titleLabel;
         this.contentArea = contentArea;
         this.dueDateLabel = dueDateLabel;
         this.initialDueDate = dueDate;
+        this.isDone = isDone;
         this.taskId = taskId;
 
         // Set the initial values
@@ -82,6 +84,7 @@ public class TaskEditingController {
         titleLabel.setText(title);
         contentArea.setText(content);
         dueDateLabel.setText("Due date: " + (dueDate != null ? dueDate.toString() : "No due date"));
+        mainAppController.updateTaskBoxStyle(taskBox, isDone);
 
         // Close the window
         Stage stage = (Stage) titleField.getScene().getWindow();

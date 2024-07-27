@@ -22,6 +22,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
+import javafx.application.Platform;
+import javafx.scene.paint.Color;
+import javafx.scene.effect.DropShadow;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -61,6 +67,22 @@ public class MainAppController implements Initializable {
                 Stage primaryStage = (Stage) newScene.getWindow();
                 primaryStage.setOnCloseRequest(event -> closeAllOpenWindows());
                 bindTasksContainerWidth();
+            }
+        });
+
+        // Periodically update task box styles
+        Timeline timeline = new Timeline(new KeyFrame(Duration.minutes(1), event -> updateAllTaskBoxStyles()));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
+    private void updateAllTaskBoxStyles() {
+        Platform.runLater(() -> {
+            for (VBox taskBox : allTasks) {
+                Label dueDateLabel = (Label) ((HBox) taskBox.getChildren().get(2)).getChildren().get(0);
+                String dueDateText = dueDateLabel.getText().replace("Due date: ", "").trim();
+                LocalDate dueDate = dueDateText.equals("No due date") ? null : LocalDate.parse(dueDateText);
+                updateTaskBoxStyle(taskBox, dueDate);
             }
         });
     }
@@ -178,7 +200,56 @@ public class MainAppController implements Initializable {
             }
         }
         return null; // or handle appropriately if no CheckBox is found
-    }    
+    }
+
+    public void updateTaskBoxStyle(VBox taskBox, LocalDate dueDate) {
+        if (dueDate == null) {
+            // Default style
+            taskBox.setEffect(null);
+            taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setWidth(2);
+        dropShadow.setHeight(2);
+        dropShadow.setRadius(2);
+
+        if (dueDate.isBefore(today)) {
+            // Past due date
+            dropShadow.setColor(Color.RED);
+            taskBox.setEffect(dropShadow);
+            taskBox.setStyle("-fx-background-color: white; -fx-border-color: red; -fx-padding: 10;");
+        } else if (dueDate.isEqual(today) || dueDate.isBefore(today.plusDays(3))) {
+            // Near due date (within 3 days)
+            dropShadow.setColor(Color.ORANGE);
+            taskBox.setEffect(dropShadow);
+            taskBox.setStyle("-fx-background-color: white; -fx-border-color: orange; -fx-padding: 10;");
+        } else {
+            // Default style
+            taskBox.setEffect(null);
+            taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+        }
+    }
+
+    public void updateTaskBoxStyle(VBox taskBox, boolean isDone) {
+        if (isDone) {
+            // Apply light green glow effect to done tasks
+            DropShadow greenGlow = new DropShadow();
+            greenGlow.setColor(Color.GREENYELLOW);
+            greenGlow.setWidth(2);
+            greenGlow.setHeight(2);
+            greenGlow.setRadius(2);
+            taskBox.setEffect(greenGlow);
+            taskBox.setStyle("-fx-background-color: white; -fx-border-color: greenyellow; -fx-padding: 10;");
+        } else {
+            Label dueDateLabel = (Label) ((HBox) ((VBox) taskBox).getChildren().get(2)).getChildren().get(0);
+            String dueDateText = dueDateLabel.getText().replace("Due date: ", "").trim();
+            LocalDate dueDate = dueDateText.equals("No due date") ? null : LocalDate.parse(dueDateText);
+            updateTaskBoxStyle((VBox) taskBox, dueDate);
+        }
+    }
 
     @FXML
     public void handleCreateButtonAction(ActionEvent event) {
@@ -240,7 +311,7 @@ public class MainAppController implements Initializable {
 
         Label dueDateLabel = new Label("Due date: " + (dueDate != null ? dueDate.toString() : "No due date"));
 
-        editButton.setOnAction(event -> handleEditButtonClick(taskBox, titleLabel, contentArea, dueDateLabel, taskId));
+        editButton.setOnAction(event -> handleEditButtonClick(taskBox, titleLabel, contentArea, dueDateLabel, isDone, taskId));
         
         // HBox for due date label and edit button
         HBox dueDateAndEditBox = new HBox();
@@ -255,6 +326,8 @@ public class MainAppController implements Initializable {
         allTasks.add(taskBox);
 
         reorderTasks();
+
+        updateTaskBoxStyle(taskBox, isDone);
     }
 
     private void handleDoneCheckboxAction(ActionEvent event, int taskId, CheckBox checkBox) {
@@ -286,17 +359,19 @@ public class MainAppController implements Initializable {
             tasksContainer.getChildren().add(0, taskBox);
             allTasks.add(0, (VBox) taskBox);
         }
+
+        updateTaskBoxStyle((VBox) taskBox, isDone);
     }
 
     @FXML
-    public void handleEditButtonClick(VBox taskBox, Label titleLabel, TextArea contentArea, Label dueDateLabel, int taskId) {
+    public void handleEditButtonClick(VBox taskBox, Label titleLabel, TextArea contentArea, Label dueDateLabel, boolean isDone, int taskId) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("TaskEditing.fxml"));
             Parent root = loader.load();
 
             TaskEditingController controller = loader.getController();
             controller.setMainAppController(this);
-            controller.setTaskBox(taskBox, titleLabel, contentArea, dueDateLabel, getTaskDueDate(taskId), taskId);
+            controller.setTaskBox(taskBox, titleLabel, contentArea, dueDateLabel, getTaskDueDate(taskId), isDone, taskId);
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
