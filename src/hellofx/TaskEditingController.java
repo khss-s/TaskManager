@@ -84,7 +84,7 @@ public class TaskEditingController {
         titleLabel.setText(title);
         contentArea.setText(content);
         dueDateLabel.setText("Due date: " + (dueDate != null ? dueDate.toString() : "No due date"));
-        mainAppController.updateTaskBoxStyle(taskBox, isDone);
+        mainAppController.updateTaskBoxStyle(taskBox, isDone, dueDate);
 
         // Close the window
         Stage stage = (Stage) titleField.getScene().getWindow();
@@ -92,19 +92,7 @@ public class TaskEditingController {
     }
 
     @FXML
-    public void handleDeleteButtonAction(ActionEvent event) {
-        // Delete task from database
-        try {
-            DBConnection connectNow = new DBConnection();
-            Connection connectDB = connectNow.connectToDB();
-            String query = "DELETE FROM tasks WHERE task_id = ?";
-            PreparedStatement pstmt = connectDB.prepareStatement(query);
-            pstmt.setInt(1, taskId);
-            pstmt.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
+    public void handleDeleteButtonAction(ActionEvent event) {        
         // Remove the task box from the main application
         mainAppController.deleteTaskFromContainer(taskBox);
 

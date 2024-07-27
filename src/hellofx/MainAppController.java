@@ -21,6 +21,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
@@ -71,7 +72,7 @@ public class MainAppController implements Initializable {
         });
 
         // Periodically update task box styles
-        Timeline timeline = new Timeline(new KeyFrame(Duration.minutes(1), event -> updateAllTaskBoxStyles()));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1), event -> updateAllTaskBoxStyles()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
     }
@@ -79,13 +80,22 @@ public class MainAppController implements Initializable {
     private void updateAllTaskBoxStyles() {
         Platform.runLater(() -> {
             for (VBox taskBox : allTasks) {
+                // Extract the due date label and parse the due date
                 Label dueDateLabel = (Label) ((HBox) taskBox.getChildren().get(2)).getChildren().get(0);
                 String dueDateText = dueDateLabel.getText().replace("Due date: ", "").trim();
                 LocalDate dueDate = dueDateText.equals("No due date") ? null : LocalDate.parse(dueDateText);
-                updateTaskBoxStyle(taskBox, dueDate);
+                
+                // Extract the isDone status
+                HBox titleBox = (HBox) taskBox.getChildren().get(0);
+                CheckBox doneCheckBox = findCheckBox(titleBox);
+                boolean isDone = doneCheckBox.isSelected();
+                
+                // Update the task box style based on isDone and due date
+                updateTaskBoxStyle(taskBox, isDone, dueDate);
             }
         });
     }
+    
 
     private void bindTasksContainerWidth() {
         // Traverse the parent hierarchy until we find a ScrollPane
@@ -121,7 +131,7 @@ public class MainAppController implements Initializable {
 
         try {
             Statement stmt = connectDB.createStatement();
-            ResultSet result = stmt.executeQuery("SELECT * FROM tasks WHERE user_id = " + userId);
+            ResultSet result = stmt.executeQuery("SELECT * FROM tasks WHERE user_id = " + userId + " AND is_deleted = FALSE");
 
             while (result.next()) {
                 int taskId = result.getInt("task_id");
@@ -202,39 +212,8 @@ public class MainAppController implements Initializable {
         return null; // or handle appropriately if no CheckBox is found
     }
 
-    public void updateTaskBoxStyle(VBox taskBox, LocalDate dueDate) {
-        if (dueDate == null) {
-            // Default style
-            taskBox.setEffect(null);
-            taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
-            return;
-        }
-
-        LocalDate today = LocalDate.now();
-        DropShadow dropShadow = new DropShadow();
-        dropShadow.setWidth(2);
-        dropShadow.setHeight(2);
-        dropShadow.setRadius(2);
-
-        if (dueDate.isBefore(today)) {
-            // Past due date
-            dropShadow.setColor(Color.RED);
-            taskBox.setEffect(dropShadow);
-            taskBox.setStyle("-fx-background-color: white; -fx-border-color: red; -fx-padding: 10;");
-        } else if (dueDate.isEqual(today) || dueDate.isBefore(today.plusDays(3))) {
-            // Near due date (within 3 days)
-            dropShadow.setColor(Color.ORANGE);
-            taskBox.setEffect(dropShadow);
-            taskBox.setStyle("-fx-background-color: white; -fx-border-color: orange; -fx-padding: 10;");
-        } else {
-            // Default style
-            taskBox.setEffect(null);
-            taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
-        }
-    }
-
-    public void updateTaskBoxStyle(VBox taskBox, boolean isDone) {
-        if (isDone) {
+    public void updateTaskBoxStyle(VBox taskBox, boolean isDone, LocalDate dueDate) {
+        if (isDone == true) {
             // Apply light green glow effect to done tasks
             DropShadow greenGlow = new DropShadow();
             greenGlow.setColor(Color.GREENYELLOW);
@@ -244,12 +223,34 @@ public class MainAppController implements Initializable {
             taskBox.setEffect(greenGlow);
             taskBox.setStyle("-fx-background-color: white; -fx-border-color: greenyellow; -fx-padding: 10;");
         } else {
-            Label dueDateLabel = (Label) ((HBox) ((VBox) taskBox).getChildren().get(2)).getChildren().get(0);
-            String dueDateText = dueDateLabel.getText().replace("Due date: ", "").trim();
-            LocalDate dueDate = dueDateText.equals("No due date") ? null : LocalDate.parse(dueDateText);
-            updateTaskBoxStyle((VBox) taskBox, dueDate);
+            DropShadow dropShadow = new DropShadow();
+            dropShadow.setWidth(2);
+            dropShadow.setHeight(2);
+            dropShadow.setRadius(2);
+    
+            LocalDate today = LocalDate.now();
+            
+            if (dueDate == null) {
+                // Default style if no due date
+                taskBox.setEffect(null);
+                taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+            } else if (dueDate.isBefore(today)) {
+                // Past due date
+                dropShadow.setColor(Color.RED);
+                taskBox.setEffect(dropShadow);
+                taskBox.setStyle("-fx-background-color: white; -fx-border-color: red; -fx-padding: 10;");
+            } else if (dueDate.isEqual(today) || dueDate.isBefore(today.plusDays(3))) {
+                // Near due date (within 3 days)
+                dropShadow.setColor(Color.ORANGE);
+                taskBox.setEffect(dropShadow);
+                taskBox.setStyle("-fx-background-color: white; -fx-border-color: orange; -fx-padding: 10;");
+            } else {
+                // Default style
+                taskBox.setEffect(null);
+                taskBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-padding: 10;");
+            }
         }
-    }
+    }    
 
     @FXML
     public void handleCreateButtonAction(ActionEvent event) {
@@ -263,6 +264,7 @@ public class MainAppController implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Create Task");
+            stage.initModality(Modality.APPLICATION_MODAL);
             Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
             stage.getIcons().add(icon);
             stage.show();
@@ -292,7 +294,7 @@ public class MainAppController implements Initializable {
         doneCheckBox.setPrefWidth(51);
         doneCheckBox.setStyle("-fx-background-color: transparent;");
         doneCheckBox.setSelected(isDone);
-        doneCheckBox.setOnAction(event -> handleDoneCheckboxAction(event, taskId, doneCheckBox));
+        doneCheckBox.setOnAction(event -> handleDoneCheckboxAction(event, taskId, doneCheckBox, dueDate));
 
         // HBox for title and checkbox
         HBox titleBox = new HBox();
@@ -327,10 +329,10 @@ public class MainAppController implements Initializable {
 
         reorderTasks();
 
-        updateTaskBoxStyle(taskBox, isDone);
+        updateTaskBoxStyle(taskBox, isDone, dueDate);
     }
 
-    private void handleDoneCheckboxAction(ActionEvent event, int taskId, CheckBox checkBox) {
+    private void handleDoneCheckboxAction(ActionEvent event, int taskId, CheckBox checkBox, LocalDate dueDate) {
         boolean isDone = checkBox.isSelected();
 
         // Update the task's is_done status in the database
@@ -360,7 +362,7 @@ public class MainAppController implements Initializable {
             allTasks.add(0, (VBox) taskBox);
         }
 
-        updateTaskBoxStyle((VBox) taskBox, isDone);
+        updateTaskBoxStyle((VBox) taskBox, isDone, dueDate);
     }
 
     @FXML
@@ -376,6 +378,7 @@ public class MainAppController implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Edit Task");
+            stage.initModality(Modality.APPLICATION_MODAL);
             Image icon = new Image(Main.class.getResourceAsStream("TaskMaster_icon.jpeg"));
             stage.getIcons().add(icon);
             stage.show();
@@ -413,17 +416,14 @@ public class MainAppController implements Initializable {
         tasksContainer.getChildren().remove(taskBox);
         allTasks.remove(taskBox);
 
-        // Extract taskId, title, and content from taskBox
+        // Extract taskId from taskBox
         int taskId = (int) taskBox.getProperties().get("taskId");
 
-        deleteTaskFromDatabase(taskId);
-    }
-
-    private void deleteTaskFromDatabase(int taskId) {
+        // Soft deletes the task in the database
         try {
             DBConnection connectNow = new DBConnection();
             Connection connectDB = connectNow.connectToDB();
-            String query = "DELETE FROM tasks WHERE task_id = ?";
+            String query = "UPDATE tasks SET is_deleted = TRUE WHERE task_id = ?";
             PreparedStatement pstmt = connectDB.prepareStatement(query);
             pstmt.setInt(1, taskId);
             pstmt.executeUpdate();
@@ -433,17 +433,17 @@ public class MainAppController implements Initializable {
     }
 
     @FXML
-    public void handleDeleteAllButtonAction(ActionEvent event) {
+    public void handleDeleteAllTasksButtonAction(ActionEvent event) {
         // Delete all tasks from the UI
         tasksContainer.getChildren().clear();
         allTasks.clear();
 
-        // Delete all tasks from the database for the logged-in user
+        // Soft delete all tasks from the database for the logged-in user
         int userId = LoginState.getUserId();
         try {
             DBConnection connectNow = new DBConnection();
             Connection connectDB = connectNow.connectToDB();
-            String query = "DELETE FROM tasks WHERE user_id = ?";
+            String query = "UPDATE tasks SET is_deleted = TRUE WHERE user_id = ?";
             PreparedStatement pstmt = connectDB.prepareStatement(query);
             pstmt.setInt(1, userId);
             pstmt.executeUpdate();
@@ -454,17 +454,17 @@ public class MainAppController implements Initializable {
 
     @FXML
     public void handleDeleteAllDoneTasksButtonAction(ActionEvent event) {
-        // Delete all done tasks from the UI and database for the logged-in user
-        deleteAllDoneTasksFromDatabase();
-        removeAllDoneTasksFromUI();
+        softDeleteAllDoneTasksFromDatabase();
+        deleteAllDoneTasksFromUI();
     }
 
-    private void deleteAllDoneTasksFromDatabase() {
+    private void softDeleteAllDoneTasksFromDatabase() {
+        // Soft deletes all done tasks in the database for the logged-in user
         int userId = LoginState.getUserId();
         try {
             DBConnection connectNow = new DBConnection();
             Connection connectDB = connectNow.connectToDB();
-            String query = "DELETE FROM tasks WHERE user_id = ? AND is_done = true";
+            String query = "UPDATE tasks SET is_deleted = TRUE WHERE user_id = ? AND is_done = true";
             PreparedStatement pstmt = connectDB.prepareStatement(query);
             pstmt.setInt(1, userId);
             pstmt.executeUpdate();
@@ -473,7 +473,7 @@ public class MainAppController implements Initializable {
         }
     }
 
-    private void removeAllDoneTasksFromUI() {
+    private void deleteAllDoneTasksFromUI() {
         // Create a list to hold tasks that need to be removed
         List<VBox> tasksToRemove = new ArrayList<>();
         
